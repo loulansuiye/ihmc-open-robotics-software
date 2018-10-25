@@ -7,6 +7,7 @@ import controller_msgs.msg.dds.ToolboxStateMessage;
 import org.junit.After;
 import org.junit.Test;
 import us.ihmc.avatar.drcRobot.DRCRobotModel;
+import us.ihmc.avatar.footstepPlanning.MultiStageFootstepPlanningModule;
 import us.ihmc.avatar.handControl.packetsAndConsumers.HandModel;
 import us.ihmc.avatar.initialSetup.DRCRobotInitialSetup;
 import us.ihmc.avatar.ros.DRCROSPPSTimestampOffsetProvider;
@@ -69,7 +70,7 @@ public abstract class FootstepPlannerToolboxTest extends FootstepPlannerDataSetT
 {
 
    private static final String robotName = "testBot";
-   private FootstepPlanningToolboxModule toolboxModule;
+   private MultiStageFootstepPlanningModule toolboxModule;
    private IHMCRealtimeROS2Publisher<FootstepPlanningRequestPacket> footstepPlanningRequestPublisher;
    private IHMCRealtimeROS2Publisher<ToolboxStateMessage> toolboxStatePublisher;
 
@@ -181,7 +182,7 @@ public abstract class FootstepPlannerToolboxTest extends FootstepPlannerDataSetT
 
    private void setupFootstepPlanningToolboxModule() throws IOException
    {
-      toolboxModule = new FootstepPlanningToolboxModule(getRobotModel(), null, true, pubSubImplementation);
+      toolboxModule = new MultiStageFootstepPlanningModule(getRobotModel(), null, true, pubSubImplementation);
    }
 
    private DRCRobotModel getRobotModel()
