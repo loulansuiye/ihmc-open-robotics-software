@@ -23,10 +23,8 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 {
    private final YoVariableRegistry registry = new YoVariableRegistry(getClass().getSimpleName());
 
-   private BipedalFootstepPlannerListener listener;
    private FootstepNodeSnapAndWiggler snapAndWiggler;
    private FootstepPlannerParameters parameters;
-   private SideDependentList<ConvexPolygon2D> controllerPolygonsInSoleFrame;
    private final ConvexPolygon2D footholdIntersection = new ConvexPolygon2D();
 
    private final YoDouble footArea = new YoDouble("footArea", registry);
@@ -40,11 +38,17 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
    private final FramePoint3D solePositionInParentZUpFrame = new FramePoint3D(parentSoleZupFrame);
 
    public SnapAndWiggleBasedNodeChecker(SideDependentList<ConvexPolygon2D> footPolygons,
-                                        BipedalFootstepPlannerListener listener,
                                         FootstepPlannerParameters parameters)
    {
-      this.snapAndWiggler = new FootstepNodeSnapAndWiggler(footPolygons, parameters, listener);
+      this.snapAndWiggler = new FootstepNodeSnapAndWiggler(footPolygons, parameters);
       this.parameters = parameters;
+   }
+
+   @Override
+   public void addPlannerListener(BipedalFootstepPlannerListener listener)
+   {
+      snapAndWiggler.addPlannerListener(listener);
+      listeners.add(listener);
    }
 
    @Override
@@ -53,16 +57,14 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
       super.setPlanarRegions(planarRegionsList);
       this.snapAndWiggler.setPlanarRegions(planarRegionsList);
 
-      if (listener != null)
-      {
+      for (BipedalFootstepPlannerListener listener : listeners)
          listener.planarRegionsListSet(planarRegionsList);
-      }
    }
 
    @Override
    public boolean isNodeValid(FootstepNode nodeToExpand, FootstepNode previousNode)
    {
-      if(!hasPlanarRegions())
+      if (!hasPlanarRegions())
          return true;
 
       FootstepNodeSnapData snapData = snapAndWiggler.snapFootstepNode(nodeToExpand);
@@ -70,15 +72,13 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
       if (snapTransform.containsNaN())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand,
-                                                         BipedalFootstepPlannerNodeRejectionReason.COULD_NOT_SNAP);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.COULD_NOT_SNAP);
          return false;
       }
 
       if (Math.abs(snapTransform.getM22()) < parameters.getMinimumSurfaceInclineRadians())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand,
-                                                         BipedalFootstepPlannerNodeRejectionReason.SURFACE_NORMAL_TOO_STEEP_TO_SNAP);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.SURFACE_NORMAL_TOO_STEEP_TO_SNAP);
          return false;
       }
 
@@ -89,7 +89,7 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
       if (!isEnoughArea)
          return false;
 
-      if(previousNode == null)
+      if (previousNode == null)
          return true;
 
       FootstepNodeSnapData previousNodeSnapData = snapAndWiggler.snapFootstepNode(previousNode);
@@ -159,8 +159,8 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
          return false;
       }
 
-      if ((solePositionInParentZUpFrame.getX() > parameters.getMaximumStepXWhenForwardAndDown())
-            && (solePositionInParentZUpFrame.getZ() < -Math.abs(parameters.getMaximumStepZWhenForwardAndDown())))
+      if ((solePositionInParentZUpFrame.getX() > parameters.getMaximumStepXWhenForwardAndDown()) && (solePositionInParentZUpFrame.getZ() < -Math
+            .abs(parameters.getMaximumStepZWhenForwardAndDown())))
       {
          notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_FORWARD_AND_DOWN);
          return false;
@@ -183,26 +183,20 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
    private void notifyListenerNodeUnderConsiderationWasSuccessful(FootstepNode node)
    {
-      if (listener != null)
-      {
+      for (BipedalFootstepPlannerListener listener : listeners)
          listener.nodeUnderConsiderationWasSuccessful(node);
-      }
    }
 
    private void notifyListenerNodeUnderConsideration(FootstepNode nodeToExpand)
    {
-      if (listener != null)
-      {
+      for (BipedalFootstepPlannerListener listener : listeners)
          listener.nodeUnderConsideration(nodeToExpand);
-      }
    }
 
    private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, BipedalFootstepPlannerNodeRejectionReason reason)
    {
-      if (listener != null)
-      {
+      for (BipedalFootstepPlannerListener listener : listeners)
          listener.nodeUnderConsiderationWasRejected(nodeToExpand, reason);
-      }
    }
 
    @Override

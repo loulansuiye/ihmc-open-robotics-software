@@ -23,6 +23,7 @@ import us.ihmc.robotics.geometry.PlanarRegionsList;
 import us.ihmc.robotics.referenceFrames.PoseReferenceFrame;
 import us.ihmc.robotics.referenceFrames.TranslationReferenceFrame;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,8 +43,8 @@ public class BodyCollisionNodeChecker extends FootstepNodeChecker
    private final FootstepNodeSnapper snapper;
    private final Vector3D bodyBoxDimensions = new Vector3D();
 
-   private BipedalFootstepPlannerListener listener;
-
+   private final FramePoint3D tempPoint = new FramePoint3D();
+   private final RigidBodyTransform tempTransform= new RigidBodyTransform();
 
    public BodyCollisionNodeChecker(FootstepPlannerParameters parameters, FootstepNodeSnapper snapper)
    {
@@ -55,15 +56,6 @@ public class BodyCollisionNodeChecker extends FootstepNodeChecker
 
       bodyCollisionFrame.updateTranslation(new Vector3D(parameters.getBodyBoxBaseX(), parameters.getBodyBoxBaseY(), parameters.getBodyBoxBaseZ() + 0.5 * parameters.getBodyBoxHeight()));
    }
-
-   public void addPlannerListener(BipedalFootstepPlannerListener listener)
-   {
-      this.listener = listener;
-   }
-
-
-   private final FramePoint3D tempPoint = new FramePoint3D();
-   private final RigidBodyTransform tempTransform= new RigidBodyTransform();
 
    @Override
    public void setPlanarRegions(PlanarRegionsList planarRegions)
@@ -194,7 +186,7 @@ public class BodyCollisionNodeChecker extends FootstepNodeChecker
 
    private void notifyPlannerListenerThatNodeIsRejected(FootstepNode node, BipedalFootstepPlannerNodeRejectionReason rejectionReason)
    {
-      if(listener != null)
+      for (BipedalFootstepPlannerListener listener : listeners)
          listener.nodeUnderConsiderationWasRejected(node, rejectionReason);
    }
 }

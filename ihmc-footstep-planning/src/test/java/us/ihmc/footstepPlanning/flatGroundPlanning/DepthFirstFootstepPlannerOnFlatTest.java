@@ -110,7 +110,7 @@ public class DepthFirstFootstepPlannerOnFlatTest extends FootstepPlannerOnFlatGr
       planner = new DepthFirstFootstepPlanner(parameters, snapper, nodeChecker, footstepCost, registry);
       planner.setFeetPolygons(footPolygonsInSoleFrame);
       planner.setMaximumNumberOfNodesToExpand(1000);
-      planner.setBipedalFootstepPlannerListener(visualizer);
+      planner.addBipedalFootstepPlannerListener(visualizer);
    }
 
    @Override
