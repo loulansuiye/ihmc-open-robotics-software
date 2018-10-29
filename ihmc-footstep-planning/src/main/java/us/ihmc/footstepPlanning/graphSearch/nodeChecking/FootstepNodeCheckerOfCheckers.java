@@ -2,6 +2,7 @@ package us.ihmc.footstepPlanning.graphSearch.nodeChecking;
 
 import us.ihmc.euclid.transform.RigidBodyTransform;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNode;
+import us.ihmc.footstepPlanning.graphSearch.listeners.BipedalFootstepPlannerListener;
 import us.ihmc.robotics.geometry.PlanarRegionsList;
 
 import java.util.List;
@@ -37,4 +38,11 @@ public class FootstepNodeCheckerOfCheckers extends FootstepNodeChecker
    {
       nodeCheckers.forEach((checker) -> checker.addStartNode(startNode, startNodeTransform));
    }
+
+   @Override
+   public void addPlannerListener(BipedalFootstepPlannerListener listener)
+   {
+      nodeCheckers.forEach(footstepNodeChecker -> footstepNodeChecker.addPlannerListener(listener));
+   }
+
 }

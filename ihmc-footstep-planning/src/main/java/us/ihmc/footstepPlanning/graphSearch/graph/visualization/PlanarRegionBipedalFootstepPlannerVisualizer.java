@@ -14,6 +14,7 @@ import us.ihmc.footstepPlanning.SimpleFootstep;
 import us.ihmc.footstepPlanning.graphSearch.footstepSnapping.FootstepNodeSnapperReadOnly;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNode;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNodeTools;
+import us.ihmc.footstepPlanning.graphSearch.listeners.BipedalFootstepPlannerListener;
 import us.ihmc.graphicsDescription.appearance.YoAppearance;
 import us.ihmc.graphicsDescription.yoGraphics.YoGraphicPolygon;
 import us.ihmc.graphicsDescription.yoGraphics.YoGraphicsListRegistry;
@@ -340,7 +341,7 @@ public class PlanarRegionBipedalFootstepPlannerVisualizer implements BipedalFoot
    }
 
    @Override
-   public void nodeUnderConsiderationWasRejected(FootstepNode rejectedNode, BipedalFootstepPlannerNodeRejectionReason reason)
+   public void nodeUnderConsiderationWasRejected(FootstepNode rejectedNode, FootstepNode parentNode, BipedalFootstepPlannerNodeRejectionReason reason)
    {
       plannerUpdateIndex.increment();
       rejectionReasonCount.get(reason).increment();

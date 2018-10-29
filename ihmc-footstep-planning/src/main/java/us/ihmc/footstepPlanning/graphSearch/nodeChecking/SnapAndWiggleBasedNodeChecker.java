@@ -9,7 +9,7 @@ import us.ihmc.footstepPlanning.graphSearch.footstepSnapping.FootstepNodeSnapAnd
 import us.ihmc.footstepPlanning.graphSearch.footstepSnapping.FootstepNodeSnapData;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNode;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNodeTools;
-import us.ihmc.footstepPlanning.graphSearch.graph.visualization.BipedalFootstepPlannerListener;
+import us.ihmc.footstepPlanning.graphSearch.listeners.BipedalFootstepPlannerListener;
 import us.ihmc.footstepPlanning.graphSearch.graph.visualization.BipedalFootstepPlannerNodeRejectionReason;
 import us.ihmc.robotics.geometry.PlanarRegionsList;
 import us.ihmc.robotics.referenceFrames.TransformReferenceFrame;
@@ -72,13 +72,13 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
       if (snapTransform.containsNaN())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.COULD_NOT_SNAP);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, previousNode, BipedalFootstepPlannerNodeRejectionReason.COULD_NOT_SNAP);
          return false;
       }
 
       if (Math.abs(snapTransform.getM22()) < parameters.getMinimumSurfaceInclineRadians())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.SURFACE_NORMAL_TOO_STEEP_TO_SNAP);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, previousNode, BipedalFootstepPlannerNodeRejectionReason.SURFACE_NORMAL_TOO_STEEP_TO_SNAP);
          return false;
       }
 
@@ -112,7 +112,7 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
       if (totalArea.getDoubleValue() < parameters.getMinimumFootholdPercent() * footArea.getDoubleValue())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.NOT_ENOUGH_AREA);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.NOT_ENOUGH_AREA);
          return false;
       }
 
@@ -134,7 +134,7 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
       RobotSide robotSide = nodeToExpand.getRobotSide();
       if (robotSide.negateIfRightSide(solePositionInParentZUpFrame.getY()) < minimumStepWidth)
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_NOT_WIDE_ENOUGH);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.STEP_NOT_WIDE_ENOUGH);
          return false;
       }
 
@@ -142,34 +142,34 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
       if (robotSide.negateIfRightSide(solePositionInParentZUpFrame.getY()) > maximumStepWidth)
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_WIDE);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_WIDE);
          return false;
       }
 
       double minimumStepLength = parameters.getMinimumStepLength();
       if (solePositionInParentZUpFrame.getX() < minimumStepLength)
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_NOT_LONG_ENOUGH);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.STEP_NOT_LONG_ENOUGH);
          return false;
       }
 
       if (Math.abs(solePositionInParentZUpFrame.getZ()) > parameters.getMaximumStepZ())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_HIGH_OR_LOW);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_HIGH_OR_LOW);
          return false;
       }
 
       if ((solePositionInParentZUpFrame.getX() > parameters.getMaximumStepXWhenForwardAndDown()) && (solePositionInParentZUpFrame.getZ() < -Math
             .abs(parameters.getMaximumStepZWhenForwardAndDown())))
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_FORWARD_AND_DOWN);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_FORWARD_AND_DOWN);
          return false;
       }
 
       stepReach.set(getXYLength(solePositionInParentZUpFrame));
       if (stepReach.getDoubleValue() > parameters.getMaximumStepReach())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_FAR);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, null, BipedalFootstepPlannerNodeRejectionReason.STEP_TOO_FAR);
          return false;
       }
 
@@ -193,10 +193,10 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
          listener.nodeUnderConsideration(nodeToExpand);
    }
 
-   private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, BipedalFootstepPlannerNodeRejectionReason reason)
+   private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, FootstepNode parentNode, BipedalFootstepPlannerNodeRejectionReason reason)
    {
       for (BipedalFootstepPlannerListener listener : listeners)
-         listener.nodeUnderConsiderationWasRejected(nodeToExpand, reason);
+         listener.nodeUnderConsiderationWasRejected(nodeToExpand, parentNode, reason);
    }
 
    @Override

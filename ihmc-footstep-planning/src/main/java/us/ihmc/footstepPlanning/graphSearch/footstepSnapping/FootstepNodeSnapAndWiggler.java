@@ -10,7 +10,7 @@ import us.ihmc.euclid.tuple3D.Point3D;
 import us.ihmc.footstepPlanning.graphSearch.parameters.FootstepPlannerParameters;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNode;
 import us.ihmc.footstepPlanning.graphSearch.graph.FootstepNodeTools;
-import us.ihmc.footstepPlanning.graphSearch.graph.visualization.BipedalFootstepPlannerListener;
+import us.ihmc.footstepPlanning.graphSearch.listeners.BipedalFootstepPlannerListener;
 import us.ihmc.footstepPlanning.graphSearch.graph.visualization.BipedalFootstepPlannerNodeRejectionReason;
 import us.ihmc.footstepPlanning.polygonSnapping.PlanarRegionsListPolygonSnapper;
 import us.ihmc.footstepPlanning.polygonWiggling.PolygonWiggler;
@@ -66,7 +66,7 @@ public class FootstepNodeSnapAndWiggler extends FootstepNodeSnapper
       {
          if (parameters.getRejectIfCannotFullyWiggleInside())
          {
-            notifyListenerNodeUnderConsiderationWasRejected(footstepNode, BipedalFootstepPlannerNodeRejectionReason.COULD_NOT_WIGGLE_INSIDE);
+            notifyListenerNodeUnderConsiderationWasRejected(footstepNode, null, BipedalFootstepPlannerNodeRejectionReason.COULD_NOT_WIGGLE_INSIDE);
             return FootstepNodeSnapData.emptyData();
          }
          else
@@ -160,7 +160,7 @@ public class FootstepNodeSnapAndWiggler extends FootstepNodeSnapper
 
                   if (zPenetration > parameters.getMaximumZPenetrationOnValleyRegions())
                   {
-                     notifyListenerNodeUnderConsiderationWasRejected(node, BipedalFootstepPlannerNodeRejectionReason.TOO_MUCH_PENETRATION_AFTER_WIGGLE);
+                     notifyListenerNodeUnderConsiderationWasRejected(node, null, BipedalFootstepPlannerNodeRejectionReason.TOO_MUCH_PENETRATION_AFTER_WIGGLE);
                      return true;
                   }
                }
@@ -170,12 +170,12 @@ public class FootstepNodeSnapAndWiggler extends FootstepNodeSnapper
       return false;
    }
 
-   private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, BipedalFootstepPlannerNodeRejectionReason reason)
+   private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, FootstepNode parentNode, BipedalFootstepPlannerNodeRejectionReason reason)
    {
       for (BipedalFootstepPlannerListener listener : listeners)
       {
          if (listener != null)
-            listener.nodeUnderConsiderationWasRejected(nodeToExpand, reason);
+            listener.nodeUnderConsiderationWasRejected(nodeToExpand, parentNode, reason);
       }
    }
 }
