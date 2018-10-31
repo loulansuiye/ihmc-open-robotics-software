@@ -195,7 +195,6 @@ public class BodyCollisionNodeChecker extends FootstepNodeChecker
 
    private void notifyPlannerListenerThatNodeIsRejected(FootstepNode node, FootstepNode parentNode, BipedalFootstepPlannerNodeRejectionReason rejectionReason)
    {
-      for (BipedalFootstepPlannerListener listener : listeners)
-         listener.nodeUnderConsiderationWasRejected(node, parentNode, rejectionReason);
+      listeners.parallelStream().forEach(listener -> listener.nodeUnderConsiderationWasRejected(node, parentNode, rejectionReason));
    }
 }

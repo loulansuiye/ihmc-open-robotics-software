@@ -57,8 +57,7 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
       super.setPlanarRegions(planarRegionsList);
       this.snapAndWiggler.setPlanarRegions(planarRegionsList);
 
-      for (BipedalFootstepPlannerListener listener : listeners)
-         listener.planarRegionsListSet(planarRegionsList);
+      listeners.parallelStream().forEach(listener -> listener.planarRegionsListSet(planarRegionsList));
    }
 
    @Override
@@ -183,20 +182,17 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
    private void notifyListenerNodeUnderConsiderationWasSuccessful(FootstepNode node)
    {
-      for (BipedalFootstepPlannerListener listener : listeners)
-         listener.nodeUnderConsiderationWasSuccessful(node);
+      listeners.parallelStream().forEach(listener -> notifyListenerNodeUnderConsiderationWasSuccessful(node));
    }
 
    private void notifyListenerNodeUnderConsideration(FootstepNode nodeToExpand)
    {
-      for (BipedalFootstepPlannerListener listener : listeners)
-         listener.nodeUnderConsideration(nodeToExpand);
+      listeners.parallelStream().forEach(listener -> listener.nodeUnderConsideration(nodeToExpand));
    }
 
    private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, FootstepNode parentNode, BipedalFootstepPlannerNodeRejectionReason reason)
    {
-      for (BipedalFootstepPlannerListener listener : listeners)
-         listener.nodeUnderConsiderationWasRejected(nodeToExpand, parentNode, reason);
+      listeners.parallelStream().forEach(listener -> listener.nodeUnderConsiderationWasRejected(nodeToExpand, parentNode, reason));
    }
 
    @Override
