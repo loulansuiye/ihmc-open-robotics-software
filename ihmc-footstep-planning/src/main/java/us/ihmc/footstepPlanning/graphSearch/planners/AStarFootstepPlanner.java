@@ -35,7 +35,7 @@ import java.util.*;
 
 public class AStarFootstepPlanner implements FootstepPlanner
 {
-   private static final boolean debug = false;
+   private static final boolean debug = true;
    private static final RobotSide defaultStartNodeSide = RobotSide.LEFT;
 
    private final String name = getClass().getSimpleName();
@@ -67,6 +67,8 @@ public class AStarFootstepPlanner implements FootstepPlanner
    private final YoDouble percentRejectedNodes = new YoDouble("PercentRejectedNodes", registry);
    private final YoLong itarationCount = new YoLong("ItarationCount", registry);
 
+   private final YoBoolean initialize = new YoBoolean("initialize", registry);
+
    private final YoBoolean validGoalNode = new YoBoolean("validGoalNode", registry);
 
    public AStarFootstepPlanner(FootstepPlannerParameters parameters, FootstepNodeChecker nodeChecker, CostToGoHeuristics heuristics,
@@ -90,6 +92,7 @@ public class AStarFootstepPlanner implements FootstepPlanner
 
       this.timeout = new YoDouble("timeout", registry);
       timeout.set(Double.POSITIVE_INFINITY);
+      this.initialize.set(true);
 
       parentRegistry.addChild(registry);
    }
@@ -177,7 +180,11 @@ public class AStarFootstepPlanner implements FootstepPlanner
    @Override
    public FootstepPlanningResult plan()
    {
-      initialize();
+      if (initialize.getBooleanValue())
+      {
+         initialize();
+         initialize.set(false);
+      }
 
       if (debug)
          PrintTools.info("A* planner has initialized");
@@ -191,7 +198,10 @@ public class AStarFootstepPlanner implements FootstepPlanner
          System.out.println("   Expanded each node to an average of " + numberOfExpandedNodes.getLongValue() + " children nodes.");
          System.out.println("   Planning took a total of " + itarationCount.getLongValue() + " iterations.");
          System.out.println("   During the planning " + percentRejectedNodes.getDoubleValue() + "% of nodes were rejected as invalid.");
+         System.out.println("   Goal was : " + goalPoseInWorld);
       }
+
+      initialize.set(true);
       return result;
    }
 
@@ -275,6 +285,11 @@ public class AStarFootstepPlanner implements FootstepPlanner
       }
    }
 
+   public void requestInitialize()
+   {
+      initialize.set(true);
+   }
+
    private void planInternal()
    {
       long planningStartTime = System.nanoTime();
@@ -285,6 +300,15 @@ public class AStarFootstepPlanner implements FootstepPlanner
 
       while (!stack.isEmpty())
       {
+         if (initialize.getBooleanValue())
+         {
+            initialize();
+            rejectedNodesCount = 0;
+            expandedNodesCount = 0;
+            iterations = 0;
+            initialize.set(false);
+         }
+
          iterations++;
 
          FootstepNode nodeToExpand = stack.poll();
@@ -307,7 +331,7 @@ public class AStarFootstepPlanner implements FootstepPlanner
          expandedNodesCount += neighbors.size();
          for (FootstepNode neighbor : neighbors)
          {
-            /** Checks if the footstep (center of the foot) is on a planar region*/
+            // Checks if the footstep (center of the foot) is on a planar region
             if (!nodeChecker.isNodeValid(neighbor, nodeToExpand))
             {
                rejectedNodesCount++;
@@ -322,7 +346,7 @@ public class AStarFootstepPlanner implements FootstepPlanner
          }
 
          long timeInNano = System.nanoTime();
-         if (Conversions.nanosecondsToSeconds(timeInNano - planningStartTime) > timeout.getDoubleValue())
+         if (Conversions.nanosecondsToSeconds(timeInNano - planningStartTime) > 1000.0)
             break;
       }
 
