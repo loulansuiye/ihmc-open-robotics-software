@@ -37,8 +37,7 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
    private final TransformReferenceFrame nodeSoleFrame = new TransformReferenceFrame("nodeSole", ReferenceFrame.getWorldFrame());
    private final FramePoint3D solePositionInParentZUpFrame = new FramePoint3D(parentSoleZupFrame);
 
-   public SnapAndWiggleBasedNodeChecker(SideDependentList<ConvexPolygon2D> footPolygons,
-                                        FootstepPlannerParameters parameters)
+   public SnapAndWiggleBasedNodeChecker(SideDependentList<ConvexPolygon2D> footPolygons, FootstepPlannerParameters parameters)
    {
       this.snapAndWiggler = new FootstepNodeSnapAndWiggler(footPolygons, parameters);
       this.parameters = parameters;
@@ -77,7 +76,8 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
       if (Math.abs(snapTransform.getM22()) < parameters.getMinimumSurfaceInclineRadians())
       {
-         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, previousNode, BipedalFootstepPlannerNodeRejectionReason.SURFACE_NORMAL_TOO_STEEP_TO_SNAP);
+         notifyListenerNodeUnderConsiderationWasRejected(nodeToExpand, previousNode,
+                                                         BipedalFootstepPlannerNodeRejectionReason.SURFACE_NORMAL_TOO_STEEP_TO_SNAP);
          return false;
       }
 
@@ -182,17 +182,21 @@ public class SnapAndWiggleBasedNodeChecker extends FootstepNodeChecker
 
    private void notifyListenerNodeUnderConsiderationWasSuccessful(FootstepNode node)
    {
-      listeners.parallelStream().forEach(listener -> notifyListenerNodeUnderConsiderationWasSuccessful(node));
+      for (BipedalFootstepPlannerListener listener : listeners)
+         listener.nodeUnderConsiderationWasSuccessful(node);
    }
 
    private void notifyListenerNodeUnderConsideration(FootstepNode nodeToExpand)
    {
-      listeners.parallelStream().forEach(listener -> listener.nodeUnderConsideration(nodeToExpand));
+      for (BipedalFootstepPlannerListener listener : listeners)
+         listener.nodeUnderConsideration(nodeToExpand);
    }
 
-   private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, FootstepNode parentNode, BipedalFootstepPlannerNodeRejectionReason reason)
+   private void notifyListenerNodeUnderConsiderationWasRejected(FootstepNode nodeToExpand, FootstepNode parentNode,
+                                                                BipedalFootstepPlannerNodeRejectionReason reason)
    {
-      listeners.parallelStream().forEach(listener -> listener.nodeUnderConsiderationWasRejected(nodeToExpand, parentNode, reason));
+      for (BipedalFootstepPlannerListener listener : listeners)
+         listener.nodeUnderConsiderationWasRejected(nodeToExpand, parentNode, reason);
    }
 
    @Override
