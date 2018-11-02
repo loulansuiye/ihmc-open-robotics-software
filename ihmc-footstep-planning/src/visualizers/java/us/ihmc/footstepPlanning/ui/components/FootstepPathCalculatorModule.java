@@ -16,6 +16,7 @@ import us.ihmc.footstepPlanning.graphSearch.nodeExpansion.FootstepNodeExpansion;
 import us.ihmc.footstepPlanning.graphSearch.nodeExpansion.ParameterBasedNodeExpansion;
 import us.ihmc.footstepPlanning.graphSearch.parameters.DefaultFootstepPlanningParameters;
 import us.ihmc.footstepPlanning.graphSearch.parameters.FootstepPlannerParameters;
+import us.ihmc.footstepPlanning.graphSearch.parameters.MessagerPlannerParameters;
 import us.ihmc.footstepPlanning.graphSearch.planners.AStarFootstepPlanner;
 import us.ihmc.footstepPlanning.graphSearch.planners.BodyPathBasedFootstepPlanner;
 import us.ihmc.footstepPlanning.graphSearch.planners.DepthFirstFootstepPlanner;
@@ -64,7 +65,7 @@ public class FootstepPathCalculatorModule
    private final AtomicReference<Double> plannerTimeoutReference;
    private final AtomicReference<Double> plannerHorizonLengthReference;
 
-   private final AtomicReference<FootstepPlannerParameters> parameters;
+   private final AtomicReference<FootstepPlannerParameters> parameters = new AtomicReference<>(new DefaultFootstepPlanningParameters());
 
    private final Messager messager;
 
@@ -80,7 +81,11 @@ public class FootstepPathCalculatorModule
       initialStanceSideReference = messager.createInput(InitialSupportSideTopic, RobotSide.LEFT);
       goalPositionReference = messager.createInput(GoalPositionTopic);
       goalOrientationReference = messager.createInput(GoalOrientationTopic, new Quaternion());
-      parameters = messager.createInput(PlannerParametersTopic, new DefaultFootstepPlanningParameters());
+      messager.registerTopicListener(PlannerParametersTopic, message ->
+      {
+         // TODO convert message-based parameters to standard parameters object
+      });
+      
       footstepPlannerTypeReference = messager.createInput(PlannerTypeTopic, FootstepPlannerType.A_STAR);
       plannerTimeoutReference = messager.createInput(PlannerTimeoutTopic, 5.0);
       plannerHorizonLengthReference = messager.createInput(PlannerHorizonLengthTopic, 1.0);
